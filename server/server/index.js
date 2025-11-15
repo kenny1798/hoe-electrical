@@ -29,9 +29,6 @@ app.use((req, res, next) => {
 
 
 
-const sslKey = fs.readFileSync(path.resolve(__dirname, './localhost-key.pem'));
-const sslCert = fs.readFileSync(path.resolve(__dirname, './localhost.pem'));
-
 const server = https.createServer(app);
 
 const serverOrigins = ["https://msmart.cloud"];
