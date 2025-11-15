@@ -20,12 +20,9 @@ app.use(express.urlencoded({
 }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-const sslKey = fs.readFileSync(path.resolve(__dirname, './localhost-key.pem'));
-const sslCert = fs.readFileSync(path.resolve(__dirname, './localhost.pem'));
+const server = https.createServer(app);
 
-const server = https.createServer({ key: sslKey, cert: sslCert }, app);
-
-const serverOrigins = ["https://localhost:3000"];
+const serverOrigins = ["https://msmart.cloud"];
 
 const io = new Server(server, {
     cors:{
