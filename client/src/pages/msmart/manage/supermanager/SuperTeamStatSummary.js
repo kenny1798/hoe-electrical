@@ -1,0 +1,1854 @@
+import React, { useEffect, useState } from 'react';
+import { useAuthContext } from '../../../../hooks/useAuthContext';
+import axios, { msmartAxios } from '../../../../api/axios';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import "flatpickr/dist/themes/material_green.css"; 
+import Flatpickr from 'react-flatpickr';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
+import SalesTartget from '../../SalesTarget';
+import Select from 'react-select';
+import { useToast } from '../../../../context/ToastContext';
+
+
+function SuperTeamStatSummary() {
+
+      const {user} = useAuthContext();
+      const {teamId} = useParams();
+      const { notifyError } = useToast();
+
+      const [summary, setSummary] = useState({
+        totalLeadsAdded: {
+          total: 0,
+          countByDate: {},
+        },
+        totalPresentations: {
+          total: 0,
+          countByDate: {},
+        },
+        followUpScheduled: {
+          total: 0,
+          countByDate: {},
+        },
+        finalStatus: {
+          Booking: {
+            total: 0,
+            countByDate: {},
+          },
+          Closed: {
+            total: 0,
+            countByDate: {},
+          },
+          Rejected: {
+            total: 0,
+            countByDate: {},
+          },
+          "Follow Up": {
+            total: 0,
+            countByDate: {},
+          },
+        },
+        avgFollowUpPerLead: {
+          total: 0,
+          countByUser: {},
+        },
+        followUpPerCloseRatio: {
+          total: 0,
+          countByUser: {},
+        },
+        followUpToClosedRate: {
+          total: 0,
+          countByUser: {},
+        },
+        followUpToRejectedRate: {
+          total: 0,
+          totalFollowUpLeads: 0,
+          totalRejectedLeads: 0,
+          countByUser: {},
+        },
+        followUpToBookingRate: {
+          total: 0,
+          totalFollowUpLeads: 0,
+          totalBookingLeads: 0,
+          countByUser: {},
+        },
+        bookingToClosedRate: {
+          total: 0,
+          totalBookingLeads: 0,
+          totalClosedFromBooking: 0,
+          countByUser: {},
+        },
+        bookingToRejectedRate: {
+          total: 0,
+          totalBookingLeads: 0,
+          totalRejectedFromBooking: 0,
+          countByUser: {},
+        },
+        salesGapSummary: {
+          targetAmount: 0,
+          actualSalesAmount: 0,
+          salesGap: 0,
+          percentageAchieved: 0,
+          countByDate: {},
+        },
+      });
+      const [IndividualSummary, setIndividualSummary] = useState({
+        totalLeadsAdded: {
+          total: 0,
+          countByDate: {},
+        },
+        totalPresentations: {
+          total: 0,
+          countByDate: {},
+        },
+        followUpScheduled: {
+          total: 0,
+          countByDate: {},
+        },
+        finalStatus: {
+          Booking: {
+            total: 0,
+            countByDate: {},
+          },
+          Closed: {
+            total: 0,
+            countByDate: {},
+          },
+          Rejected: {
+            total: 0,
+            countByDate: {},
+          },
+          "Follow Up": {
+            total: 0,
+            countByDate: {},
+          },
+        },
+        avgFollowUpPerLead: {
+          total: 0,
+        },
+        followUpPerCloseRatio: {
+          total: 0,
+        },
+        followUpToClosedRate: {
+          total: 0,
+          totalFollowUpLeads: 0,
+          totalClosedLeads: 0,
+        },
+        followUpToRejectedRate: {
+          total: 0,
+          totalFollowUpLeads: 0,
+          totalRejectedLeads: 0,
+        },
+        followUpToBookingRate: {
+          total: 0,
+          totalFollowUpLeads: 0,
+          totalBookingLeads: 0,
+        },
+        bookingToClosedRate: {
+          total: 0,
+          totalBookingLeads: 0,
+          totalClosedFromBooking: 0,
+        },
+        bookingToRejectedRate: {
+          total: 0,
+          totalBookingLeads: 0,
+          totalRejectedFromBooking: 0,
+        },
+        salesGapSummary: {
+            targetAmount: 0.00,
+            actualSalesAmount: 0,
+            salesGap: 0.00,
+            percentageAchieved: 0,
+          }
+
+        
+      });
+      const [managerSummary, setManagerSummary] = useState({
+        totalLeadsAdded: {
+          total: 0,
+          countByDate: {},
+        },
+        totalPresentations: {
+          total: 0,
+          countByDate: {},
+        },
+        followUpScheduled: {
+          total: 0,
+          countByDate: {},
+        },
+        finalStatus: {
+          Booking: {
+            total: 0,
+            countByDate: {},
+          },
+          Closed: {
+            total: 0,
+            countByDate: {},
+          },
+          Rejected: {
+            total: 0,
+            countByDate: {},
+          },
+          "Follow Up": {
+            total: 0,
+            countByDate: {},
+          },
+        },
+        avgFollowUpPerLead: {
+          total: 0,
+          countByUser: {},
+        },
+        followUpPerCloseRatio: {
+          total: 0,
+          countByUser: {},
+        },
+        followUpToClosedRate: {
+          total: 0,
+          countByUser: {},
+        },
+        followUpToRejectedRate: {
+          total: 0,
+          totalFollowUpLeads: 0,
+          totalRejectedLeads: 0,
+          countByUser: {},
+        },
+        followUpToBookingRate: {
+          total: 0,
+          totalFollowUpLeads: 0,
+          totalBookingLeads: 0,
+          countByUser: {},
+        },
+        bookingToClosedRate: {
+          total: 0,
+          totalBookingLeads: 0,
+          totalClosedFromBooking: 0,
+          countByUser: {},
+        },
+        bookingToRejectedRate: {
+          total: 0,
+          totalBookingLeads: 0,
+          totalRejectedFromBooking: 0,
+          countByUser: {},
+        },
+        salesGapSummary: {
+          targetAmount: 0,
+          actualSalesAmount: 0,
+          salesGap: 0,
+          percentageAchieved: 0,
+          countByDate: {},
+        },
+      });
+      const [dataLoaded, setDataLoaded] = useState(false);
+      const [loading, setLoading] = useState(false);
+      const [view, setView] = useState(false);
+      const [section, setSection] = useState('Team');
+      const [members, setMembers] = useState ([]);
+      const [selectedManager, setSelectedManager] = useState([]);
+      const [selectedUser, setSelectedUser] = useState([]);
+    
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    const formattedDate = `${year}-${month}-${day}`;
+    const [filterDate, setFilterDate] = useState([new Date(), new Date()]);
+
+
+    
+      useEffect(() => {
+          setLoading(true);
+          msmartAxios.get('/api/msmart/get/user/team', {
+              headers: {
+                  accessToken: user.token
+              }
+          }).then((response) => {
+              if (response.status === 201){
+                  setView(response.data.teamId === teamId);
+              } else {
+                  setView(false);
+              }
+          }).catch(() => {
+            notifyError("Error fetching data");
+          }).finally(() => setLoading(false));
+      }, [user.token, teamId]);
+
+      useEffect(() => {
+        setLoading(true);
+        msmartAxios.get(`/api/msmart/supermanager/get/all/team/member/${teamId}`, {
+            headers: {
+                accessToken: user.token
+            }
+        }).then((response) => {
+            if (response.data.team){
+                setMembers(response.data.team);
+            }
+        }).catch(() => {
+          notifyError("Error fetching team members");
+        }).finally(() => setLoading(false));
+      }, [user.token, teamId]);
+    
+      useEffect(() => {
+        if (filterDate.length === 1) {
+          const start = filterDate[0];
+          const end = filterDate[0];
+      
+          const formattedStart = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, "0")}-${String(start.getDate()).padStart(2, "0")}`;
+          const formattedEnd = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, "0")}-${String(end.getDate()).padStart(2, "0")}`;
+
+          if (section === 'Individual') {
+          selectedUser.length > 0 && fetchIndividualData(selectedUser[0].username, selectedUser[0].label);
+          }else if (section === 'Manager'){
+            selectedManager.length > 0 && fetchManagerData(selectedManager[0].username, selectedManager[0].label);
+          }
+          else if (section === 'Team'){
+            fetchTeamData({startDate: formattedStart, endDate: formattedEnd});
+          }
+          
+        }
+        if (filterDate.length === 2) {
+          const start = filterDate[0];
+          const end = filterDate[1];
+      
+          const formattedStart = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, "0")}-${String(start.getDate()).padStart(2, "0")}`;
+          const formattedEnd = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, "0")}-${String(end.getDate()).padStart(2, "0")}`;
+      
+          if (section === 'Individual') {
+            selectedUser.length > 0 && fetchIndividualData(selectedUser[0].username, selectedUser[0].label);
+          }else if (section === 'Manager') {
+            selectedManager.length > 0 && fetchManagerData(selectedManager[0].username, selectedManager[0].label);
+          }else if (section === 'Team'){
+            fetchTeamData({startDate: formattedStart, endDate: formattedEnd});
+          }
+        }
+      }, [filterDate]);
+      
+      // Helper: Generate all dates in range
+      function getDateRangeList(start, end) {
+        const result = [];
+        const current = new Date(start);
+        const last = new Date(end);
+      
+        while (current <= last) {
+          const formatted = current.toLocaleDateString("sv-SE"); // sv-SE = 'YYYY-MM-DD'
+          result.push(formatted);
+          current.setDate(current.getDate() + 1);
+        }
+      
+        return result;
+      }
+      
+    
+      const fetchManagerData = async (username, label) => {
+        setSelectedManager([{username: username, label: label}]);
+        setLoading(true);
+        let formattedStart = '';
+        let formattedEnd = '';
+        if (filterDate.length === 1) {
+          const start = filterDate[0];
+          const end = filterDate[0];
+          formattedStart = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, "0")}-${String(start.getDate()).padStart(2, "0")}`;
+          formattedEnd = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, "0")}-${String(end.getDate()).padStart(2, "0")}`;
+        }
+        if (filterDate.length === 2) {
+          const start = filterDate[0];
+          const end = filterDate[1];
+      
+          formattedStart = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, "0")}-${String(start.getDate()).padStart(2, "0")}`;
+          formattedEnd = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, "0")}-${String(end.getDate()).padStart(2, "0")}`;
+        }
+        try {
+          const response = await msmartAxios.post(`/api/msmart/stats/team/manager/${teamId}`, { startDate: formattedStart, endOfDate: formattedEnd, managerUsername: username }, {
+            headers: { accessToken: user.token }
+          });
+          setManagerSummary(response.data);
+        } catch {
+          notifyError("Unable to fetch data.");
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      const fetchIndividualData = async (username, label) => {
+        setSelectedUser([{username: username, label: label}]);
+        setLoading(true);
+        let formattedStart = '';
+        let formattedEnd = '';
+        if (filterDate.length === 1) {
+          const start = filterDate[0];
+          const end = filterDate[0];
+          formattedStart = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, "0")}-${String(start.getDate()).padStart(2, "0")}`;
+          formattedEnd = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, "0")}-${String(end.getDate()).padStart(2, "0")}`;
+        }
+        if (filterDate.length === 2) {
+          const start = filterDate[0];
+          const end = filterDate[1];
+      
+          formattedStart = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, "0")}-${String(start.getDate()).padStart(2, "0")}`;
+          formattedEnd = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, "0")}-${String(end.getDate()).padStart(2, "0")}`;
+        }
+        try {
+          const response = await msmartAxios.post(`/api/msmart/stats/manager/individual/${teamId}`, { startDate: formattedStart, endOfDate: formattedEnd, username: username }, {
+            headers: { accessToken: user.token }
+          });
+          setIndividualSummary(response.data);
+        } catch {
+          notifyError("Unable to fetch data.");
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      const fetchTeamData = async ({startDate, endDate}) => {
+        setLoading(true);
+        try {
+          const response = await msmartAxios.post(`/api/msmart/stats/team/${teamId}`, { startDate: startDate, endOfDate: endDate}, {
+            headers: { accessToken: user.token }
+          });
+          setSummary(response.data);
+        } catch {
+          notifyError("Unable to fetch data.");
+        } finally {
+          setLoading(false);
+        }
+      }
+      
+      const handleDateChange = (selectedDates) => {
+        if (selectedDates.length === 2) {
+          setFilterDate(selectedDates); // terus simpan sebagai array
+        }
+        console.log(selectedDates)
+      };
+      
+       const exportToExcelTeam = async (data, startDate, endDate) => {
+              const workbook = new ExcelJS.Workbook();
+            
+              // ========= SHEET 1: SUMMARY ========= //
+              const summarySheet = workbook.addWorksheet("Summary");
+              summarySheet.addRow(["Indicator", "Total", "Details"]);
+            
+              summarySheet.addRow([
+                "Total Leads Added",
+                data.totalLeadsAdded.total,
+                "",
+              ]);
+            
+              summarySheet.addRow([
+                "Total Presentations",
+                data.totalPresentations.total,
+                "",
+              ]);
+            
+              summarySheet.addRow([
+                "Follow Up Scheduled",
+                data.followUpScheduled.total,
+                "",
+              ]);
+            
+              const statuses = ["Booking", "Closed", "Rejected", "Follow Up"];
+              statuses.forEach((status) => {
+                const stat = data.finalStatus[status] || {};
+                summarySheet.addRow([
+                  `${status}`,
+                  stat.total,
+                  "",
+                ]);
+              });
+            
+              summarySheet.addRow(["Avg Follow Up / Lead", data.avgFollowUpPerLead.total, ""]);
+              summarySheet.addRow(["Avg Follow Up / Closed Lead", data.followUpPerCloseRatio.total, ""]);
+            
+              summarySheet.addRow([
+                "Follow Up ➝ Closed Rate",
+                `${data.followUpToClosedRate.total}%`,
+                `Follow Up: ${data.followUpToClosedRate.totalFollowUpLeads}, Closed: ${data.followUpToClosedRate.totalClosedLeads}`,
+              ]);
+            
+              summarySheet.addRow([
+                "Follow Up ➝ Rejected Rate",
+                `${data.followUpToRejectedRate.total}%`,
+                `Follow Up: ${data.followUpToRejectedRate.totalFollowUpLeads}, Rejected: ${data.followUpToRejectedRate.totalRejectedLeads}`,
+              ]);
+            
+              summarySheet.addRow([
+                "Follow Up ➝ Booking Rate",
+                `${data.followUpToBookingRate.total}%`,
+                `Follow Up: ${data.followUpToBookingRate.totalFollowUpLeads}, Booking: ${data.followUpToBookingRate.totalBookingLeads}`,
+              ]);
+            
+              summarySheet.addRow([
+                "Booking ➝ Closed Rate",
+                `${data.bookingToClosedRate.total}%`,
+                `Booking: ${data.bookingToClosedRate.totalBookingLeads}, Closed: ${data.bookingToClosedRate.totalClosedFromBooking}`,
+              ]);
+            
+              summarySheet.addRow([
+                "Booking ➝ Rejected Rate",
+                `${data.bookingToRejectedRate.total}%`,
+                `Booking: ${data.bookingToRejectedRate.totalBookingLeads}, Rejected: ${data.bookingToRejectedRate.totalRejectedFromBooking}`,
+              ]);
+      
+              summarySheet.addRow([
+                "Total Targeted Sales",
+                data.salesGapSummary.targetAmount,
+                "",
+              ]);
+      
+              summarySheet.addRow([
+                "Total Actual Sales",
+                data.salesGapSummary.actualSalesAmount,
+                "",
+              ]);
+      
+              summarySheet.addRow([
+                "Total Sales Gap",
+                data.salesGapSummary.salesGap  * -1,
+                "",
+              ]);
+            
+              // ========= SHEET 2: COUNT BY DATE ========= //
+              const countSheet = workbook.addWorksheet("Summary By Date");
+            
+              // Header
+              const headerRow = ["Date", "Leads Added", "Presentation", "Follow Up", "Closed", "Rejected", "Booking", "Targeted Sales", "Actual Sales", "Sales Gap"];
+              countSheet.addRow(headerRow);
+            
+              // Convert date range to list of dates
+              const dateList = getDateRangeList(startDate, endDate);
+
+              dateList.forEach((date) => {
+                const sumFromUsers = (path) => {
+                  return Object.values(data?.[path.section]?.countByDate || {}).reduce((sum, userObj) => {
+                    return sum + (userObj?.[date] || 0);
+                  }, 0);
+                };
+              
+                const getSalesMetric = (metric) => {
+                  return Object.values(data.salesGapSummary.countByDate || {}).reduce((sum, userObj) => {
+                    return sum + (userObj?.[date]?.[metric] || 0);
+                  }, 0);
+                };
+              
+                countSheet.addRow([
+                  date,
+                  sumFromUsers({ section: "totalLeadsAdded" }),
+                  sumFromUsers({ section: "totalPresentations" }),
+                  sumFromUsers({ section: "followUpScheduled" }),
+                  sumFromUsers({ section: "finalStatus", status: "Closed" }),
+                  sumFromUsers({ section: "finalStatus", status: "Rejected" }),
+                  sumFromUsers({ section: "finalStatus", status: "Booking" }),
+                  getSalesMetric("targetAmount"),
+                  getSalesMetric("actualSalesAmount"),
+                  getSalesMetric("salesGap") * -1,
+                ]);
+              });
+              
+            
+              // Save
+              const buffer = await workbook.xlsx.writeBuffer();
+              const username = await user.username;
+              const blob = new Blob([buffer], {
+                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              });
+              const shortStartDate = `${startDate}`.slice(4, 15).split("-").reverse().join();
+              const shortEndDate = `${endDate}`.slice(4, 15).split("-").reverse().join();
+              saveAs(blob, `Msmart Team Summary (${username}) ${shortStartDate} to ${shortEndDate}.xlsx`);
+            };
+
+        const exportToExcelIndividual = async (data, startDate, endDate) => {
+              const workbook = new ExcelJS.Workbook();
+            
+              // ========= SHEET 1: SUMMARY ========= //
+              const summarySheet = workbook.addWorksheet("Summary");
+              summarySheet.addRow(["Indicator", "Total", "Details"]);
+            
+              summarySheet.addRow([
+                "Total Leads Added",
+                data.totalLeadsAdded.total,
+                "",
+              ]);
+            
+              summarySheet.addRow([
+                "Total Presentations",
+                data.totalPresentations.total,
+                "",
+              ]);
+            
+              summarySheet.addRow([
+                "Follow Up Scheduled",
+                data.followUpScheduled.total,
+                "",
+              ]);
+            
+              const statuses = ["Booking", "Closed", "Rejected", "Follow Up"];
+              statuses.forEach((status) => {
+                const stat = data.finalStatus[status] || {};
+                summarySheet.addRow([
+                  `${status}`,
+                  stat.total,
+                  "",
+                ]);
+              });
+            
+              summarySheet.addRow(["Avg Follow Up / Lead", data.avgFollowUpPerLead.total, ""]);
+              summarySheet.addRow(["Avg Follow Up / Closed Lead", data.followUpPerCloseRatio.total, ""]);
+            
+              summarySheet.addRow([
+                "Follow Up ➝ Closed Rate",
+                `${data.followUpToClosedRate.total}%`,
+                `Follow Up: ${data.followUpToClosedRate.totalFollowUpLeads}, Closed: ${data.followUpToClosedRate.totalClosedLeads}`,
+              ]);
+            
+              summarySheet.addRow([
+                "Follow Up ➝ Rejected Rate",
+                `${data.followUpToRejectedRate.total}%`,
+                `Follow Up: ${data.followUpToRejectedRate.totalFollowUpLeads}, Rejected: ${data.followUpToRejectedRate.totalRejectedLeads}`,
+              ]);
+            
+              summarySheet.addRow([
+                "Follow Up ➝ Booking Rate",
+                `${data.followUpToBookingRate.total}%`,
+                `Follow Up: ${data.followUpToBookingRate.totalFollowUpLeads}, Booking: ${data.followUpToBookingRate.totalBookingLeads}`,
+              ]);
+            
+              summarySheet.addRow([
+                "Booking ➝ Closed Rate",
+                `${data.bookingToClosedRate.total}%`,
+                `Booking: ${data.bookingToClosedRate.totalBookingLeads}, Closed: ${data.bookingToClosedRate.totalClosedFromBooking}`,
+              ]);
+            
+              summarySheet.addRow([
+                "Booking ➝ Rejected Rate",
+                `${data.bookingToRejectedRate.total}%`,
+                `Booking: ${data.bookingToRejectedRate.totalBookingLeads}, Rejected: ${data.bookingToRejectedRate.totalRejectedFromBooking}`,
+              ]);
+      
+              summarySheet.addRow([
+                "Total Targeted Sales",
+                data.salesGapSummary.targetAmount,
+                "",
+              ]);
+      
+              summarySheet.addRow([
+                "Total Actual Sales",
+                data.salesGapSummary.actualSalesAmount,
+                "",
+              ]);
+      
+              summarySheet.addRow([
+                "Total Sales Gap",
+                data.salesGapSummary.salesGap  * -1,
+                "",
+              ]);
+            
+              // ========= SHEET 2: COUNT BY DATE ========= //
+              const countSheet = workbook.addWorksheet("Summary By Date");
+            
+              // Header
+              const headerRow = ["Date", "Leads Added", "Presentation", "Follow Up", "Closed", "Rejected", "Booking", "Targeted Sales", "Actual Sales", "Sales Gap"];
+              countSheet.addRow(headerRow);
+            
+              // Convert date range to list of dates
+              const dateList = getDateRangeList(startDate, endDate);
+            
+              dateList.forEach((date) => {
+                countSheet.addRow([
+                  date,
+                  data.totalLeadsAdded.countByDate?.[date] || 0,
+                  data.totalPresentations.countByDate?.[date] || 0,
+                  data.followUpScheduled.countByDate?.[date] || 0,
+                  data.finalStatus.Closed.countByDate?.[date] || 0,
+                  data.finalStatus.Rejected.countByDate?.[date] || 0,
+                  data.finalStatus.Booking.countByDate?.[date] || 0,
+                  data.salesGapSummary.countByDate?.[date].targetAmount || 0,
+                  data.salesGapSummary.countByDate?.[date].actualSalesAmount || 0,
+                  data.salesGapSummary.countByDate?.[date].salesGap * -1 || 0,
+                ]);
+              });
+            
+              // Save
+              const buffer = await workbook.xlsx.writeBuffer();
+              const blob = new Blob([buffer], {
+                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              });
+              const shortStartDate = `${startDate}`.slice(4, 15).split("-").reverse().join();
+              const shortEndDate = `${endDate}`.slice(4, 15).split("-").reverse().join();
+              saveAs(blob, `Msmart Individual Summary (${selectedUser[0].label}) ${shortStartDate} to ${shortEndDate}.xlsx`);
+            };
+
+            const exportToExcelManager = async (data, startDate, endDate) => {
+                const workbook = new ExcelJS.Workbook();
+              
+                // ========= SHEET 1: SUMMARY ========= //
+                const summarySheet = workbook.addWorksheet("Summary");
+                summarySheet.addRow(["Indicator", "Total", "Details"]);
+              
+                summarySheet.addRow(["Total Leads Added", data.totalLeadsAdded.total, ""]);
+                summarySheet.addRow(["Total Presentations", data.totalPresentations.total, ""]);
+                summarySheet.addRow(["Follow Up Scheduled", data.followUpScheduled.total, ""]);
+              
+                const statuses = ["Booking", "Closed", "Rejected", "Follow Up"];
+                statuses.forEach((status) => {
+                  const stat = data.finalStatus[status] || {};
+                  summarySheet.addRow([`${status}`, stat.total, ""]);
+                });
+              
+                summarySheet.addRow(["Avg Follow Up / Lead", data.avgFollowUpPerLead.total, ""]);
+                summarySheet.addRow(["Avg Follow Up / Closed Lead", data.followUpPerCloseRatio.total, ""]);
+              
+                summarySheet.addRow([
+                  "Follow Up ➝ Closed Rate",
+                  `${data.followUpToClosedRate.total}%`,
+                  `Follow Up: ${data.followUpToClosedRate.totalFollowUpLeads}, Closed: ${data.followUpToClosedRate.totalClosedLeads}`,
+                ]);
+              
+                summarySheet.addRow([
+                  "Follow Up ➝ Rejected Rate",
+                  `${data.followUpToRejectedRate.total}%`,
+                  `Follow Up: ${data.followUpToRejectedRate.totalFollowUpLeads}, Rejected: ${data.followUpToRejectedRate.totalRejectedLeads}`,
+                ]);
+              
+                summarySheet.addRow([
+                  "Follow Up ➝ Booking Rate",
+                  `${data.followUpToBookingRate.total}%`,
+                  `Follow Up: ${data.followUpToBookingRate.totalFollowUpLeads}, Booking: ${data.followUpToBookingRate.totalBookingLeads}`,
+                ]);
+              
+                summarySheet.addRow([
+                  "Booking ➝ Closed Rate",
+                  `${data.bookingToClosedRate.total}%`,
+                  `Booking: ${data.bookingToClosedRate.totalBookingLeads}, Closed: ${data.bookingToClosedRate.totalClosedFromBooking}`,
+                ]);
+              
+                summarySheet.addRow([
+                  "Booking ➝ Rejected Rate",
+                  `${data.bookingToRejectedRate.total}%`,
+                  `Booking: ${data.bookingToRejectedRate.totalBookingLeads}, Rejected: ${data.bookingToRejectedRate.totalRejectedFromBooking}`,
+                ]);
+              
+                summarySheet.addRow(["Total Targeted Sales", data.salesGapSummary.targetAmount, ""]);
+                summarySheet.addRow(["Total Actual Sales", data.salesGapSummary.actualSalesAmount, ""]);
+                summarySheet.addRow(["Total Sales Gap", data.salesGapSummary.salesGap * -1, ""]);
+              
+                // ========= SHEET 2: COUNT BY DATE ========= //
+                const countSheet = workbook.addWorksheet("Summary By Date");
+              
+                const headerRow = [
+                  "Date",
+                  "Leads Added",
+                  "Presentation",
+                  "Follow Up",
+                  "Closed",
+                  "Rejected",
+                  "Booking",
+                  "Targeted Sales",
+                  "Actual Sales",
+                  "Sales Gap"
+                ];
+                countSheet.addRow(headerRow);
+              
+                const dateList = getDateRangeList(startDate, endDate);
+              
+                dateList.forEach((date) => {
+                  const sumFromUsers = (section, status = null) => {
+                    if (status) {
+                      // For finalStatus like Closed, Booking, etc.
+                      return Object.values(data[section]?.[status]?.countByDate || {}).reduce(
+                        (sum, userObj) => sum + (userObj?.[date] || 0),
+                        0
+                      );
+                    } else {
+                      return Object.values(data[section]?.countByDate || {}).reduce(
+                        (sum, userObj) => sum + (userObj?.[date] || 0),
+                        0
+                      );
+                    }
+                  };
+              
+                  const getSalesMetric = (metric) => {
+                    return Object.values(data.salesGapSummary.countByDate || {}).reduce((sum, userObj) => {
+                      return sum + (userObj?.[date]?.[metric] || 0);
+                    }, 0);
+                  };
+              
+                  countSheet.addRow([
+                    date,
+                    sumFromUsers("totalLeadsAdded"),
+                    sumFromUsers("totalPresentations"),
+                    sumFromUsers("followUpScheduled"),
+                    sumFromUsers("finalStatus", "Closed"),
+                    sumFromUsers("finalStatus", "Rejected"),
+                    sumFromUsers("finalStatus", "Booking"),
+                    getSalesMetric("targetAmount"),
+                    getSalesMetric("actualSalesAmount"),
+                    getSalesMetric("salesGap") * -1
+                  ]);
+                });
+              
+                // Save
+                const buffer = await workbook.xlsx.writeBuffer();
+                const shortStart = `${startDate}`.slice(4, 15).split("-").reverse().join();
+                const shortEnd = `${endDate}`.slice(4, 15).split("-").reverse().join();
+                const blob = new Blob([buffer], {
+                  type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                });
+                saveAs(blob, `Msmart Manager Summary (${selectedManager[0].label}) ${shortStart} to ${shortEnd}.xlsx`);
+              };
+              
+      
+      const nameMap = {};
+      members.forEach(member => {
+        nameMap[member.username] = member.nameInTeam;
+      });
+      
+      // Step 2: Group members by managerUsername
+      const groupedByManager = members.reduce((acc, member) => {
+        const manager = member.managerUsername;
+        if (!acc[manager]) acc[manager] = [];
+        acc[manager].push({
+          value: member.username,
+          label: member.nameInTeam
+        });
+        return acc;
+      }, {});
+
+      const groupedByPosition = members.reduce((acc, member) => {
+        // Filter hanya Manager atau Manager & Member
+        if (member.position === 'Manager' || member.position === 'Manager & Member') {
+          const position = member.position;
+      
+          if (!acc[position]) acc[position] = [];
+          acc[position].push({
+            value: member.username,
+            label: member.nameInTeam
+          });
+        }
+      
+        return acc;
+      }, {});
+
+      const groupedOptions = Object.entries(groupedByManager)
+      .sort(([a], [b]) => a.localeCompare(b)) // sort by managerUsername
+      .map(([managerUsername, options]) => ({
+        label: nameMap[managerUsername] || managerUsername,
+        options
+      }));
+
+      const managerOptions = Object.entries(groupedByPosition)
+            .sort(([a], [b]) => a.localeCompare(b)) // sort by position name
+            .map(([position, options]) => ({
+                label: position === 'Manager' ? 'Managers' : 'Team Leaders', // atau ubah ke custom label kalau nak
+                options
+            }));
+    
+      
+    
+      return (
+
+          <div>
+                    <div className="container mt-4">
+                <div className="row justify-content-center text-center">
+                  <div className="col-lg-12">
+                  <h1 className="mt-4 header-title">M-SMART</h1>
+                  </div>
+                  </div>
+                              
+                      
+                      <div class="card text-center mt-4">
+                      
+                        <div class="card-header text-start">
+                                          <ul class="nav nav-tabs card-header-tabs">
+                                          <li class="nav-item">
+                                            <Link class="nav-link active" aria-current="true" href="#">Summary</Link>
+                                            </li>
+                                            <li class="nav-item">
+                                            <Link className="nav-link" to={`/msmart/team/admin/manager/${teamId}`}>Manage</Link>
+                                            </li>
+                                            <li class="nav-item">
+                                            <Link className="nav-link" to={`/msmart/team/admin/activity/${teamId}`}>Activities</Link>
+                                            </li>
+                                            <li class="nav-item">
+                                            <Link className="nav-link" to={`/msmart/team/admin/followup/${teamId}`}>Follow Up</Link>
+                                            </li>
+                                            <li class="nav-item">
+                                            <Link className="nav-link" to={`/msmart/team/admin/leads/${teamId}`}>Leads</Link>
+                                            </li>
+                                          </ul>
+                                        </div>
+            
+            <div class="card-body">
+
+            <div className="row justify-content-center">
+                                        <div className="col-10 col-md-6 col-lg-4">
+                                        <nav class="nav nav-pills nav-justified my-4" style={{backgroundColor: "#e9ecef", borderRadius: "10px"}}>
+                                        {section === 'Team' ? <>
+                                          <button type="button" class="nav-link active" disabled>Team</button>
+                                          <button type="button" class="nav-link" onClick={() => setSection('Manager')}>Manager</button>
+                                          <button type="button" class="nav-link" onClick={() => setSection('Individual')}>Individual</button>
+                                          </> : section === 'Manager' ? <>
+                                          <button type="button" class="nav-link" onClick={() => setSection('Team')}>Team</button>
+                                          <button type="button" class="nav-link active" disabled >Manager</button>
+                                          <button type="button" class="nav-link" onClick={() => setSection('Individual')}>Individual</button>
+                                          </> : <>
+                                          <button type="button" class="nav-link" onClick={() => setSection('Team')}>Team</button>
+                                          <button type="button" class="nav-link" onClick={() => setSection('Manager')}>Manager</button>
+                                          <button type="button" class="nav-link active" disabled>Individual</button>
+                                          </>}
+                                      </nav>
+                                        </div>
+                                      </div>
+          
+            {view === null ? (<></>) : view === false ? (
+                  <div className="text-center my-4">
+                  <div className="spinner-border text-dark" role="status">
+                      <span className="visually-hidden">Loading...</span>
+                  </div>
+              </div>
+              ) : (
+                  <>
+                      <div className='row justify-content-center mt-3'>
+                          <div className=' text-center'>
+                              <div className='container'>   
+    
+                                  {loading ? (
+                                      <div className="text-center my-4">
+                                          <div className="spinner-border text-dark" role="status">
+                                              <span className="visually-hidden">Loading...</span>
+                                          </div>
+                                      </div>
+                                  ) : (
+                                    
+                                    section === 'Team' ? (
+                                      <div className="container-fluid p-3">
+
+                                      <div className="col-lg-12 form-floating justify  text-start">
+                                            <Flatpickr
+                                              id="floatingInput1"
+                                              className='form-control shadow-none mb-3'
+                                              value={filterDate}
+                                              placeholder={`Selected Date:${formattedDate}`}
+                                              options={{
+                                                  dateFormat: "d-m-Y",
+                                                  mode: "range",
+                                                  disableMobile: true
+                                              }}
+                                              onChange={handleDateChange}
+                                              />
+                                              <label for="floatingInput1">select date:</label>
+                                            </div>
+      
+                                                
+                                            
+      
+                                            <div className="row my-3">
+                                              <h3 style={{textTransform:"capitalize"}}>Team Summary</h3>
+                                              <small className="text-muted">{`${filterDate[0]}`.slice(4,15)} to {`${filterDate[1]}`.slice(4,15)}</small>
+                                            </div>
+      
+                                          <div className="row g-3 justify-content-center">
+      
+                                          <div className="col-12 col-md-6 col-lg-4">
+                                              <div className="card text-center p-3">
+                                                <i className="bi bi-cash-coin" style={{ fontSize: "2rem", color: "green" }}></i>
+                                                <h4 className="mb-0">RM {!summary ? '0.00' : Number(summary.salesGapSummary.targetAmount).toLocaleString('en-MY', {
+                                                  minimumFractionDigits: 2,
+                                                  maximumFractionDigits: 2
+                                                })}</h4>
+                                                <small className="text-muted">Targeted Sales</small>
+                                              </div>
+                                            </div>
+                                    
+                                            
+                                            <div className="col-12 col-md-6 col-lg-4">
+                                              <div className="card text-center p-3">
+                                                <i className="bi bi-cash-coin" style={{ fontSize: "2rem", color: "green"}}></i>
+                                                <h4 className="mb-0">RM {!summary ? '0.00' : Number(summary.salesGapSummary.actualSalesAmount).toLocaleString('en-MY', {
+                                                  minimumFractionDigits: 2,
+                                                  maximumFractionDigits: 2
+                                                })}</h4>
+                                                <small className="text-muted">Actual Sales</small>
+                                              </div>
+                                            </div>
+                                    
+                                            
+                                            <div className="col-12 col-md-6 col-lg-4">
+                                              <div className="card text-center p-3">
+                                                {!summary ? (<></>): (<>
+                                                {summary.salesGapSummary.salesGap <= 0 ? (<>
+                                                <i className="bi bi-cash-coin" style={{ fontSize: "2rem", color: "green"}}></i>
+                                                <h4 className="mb-0" style={{color: "green"}}>RM {!summary ? '0.00' : Number(summary.salesGapSummary.salesGap * -1).toLocaleString('en-MY', {
+                                                  minimumFractionDigits: 2,
+                                                  maximumFractionDigits: 2
+                                                })}</h4>
+                                                </>) : (<>
+                                                  <i className="bi bi-cash-coin" style={{ fontSize: "2rem", color: "red"}}></i>
+                                                <h4 className="mb-0" style={{color: "red"}}>RM {!summary ? '0.00' : Number(summary.salesGapSummary.salesGap * -1).toLocaleString('en-MY', {
+                                                  minimumFractionDigits: 2,
+                                                  maximumFractionDigits: 2
+                                                })}</h4>
+                                                </>)}
+                                                
+                                                </>)}
+                                                <small className="text-muted">Sales Gap</small>
+                                              </div>
+                                            </div>
+                                            
+                                            <div className="col-12 col-md-6 col-lg-4">
+                                              <div className="card text-center p-3">
+                                                <i className="bi bi-cloud-plus-fill" style={{ fontSize: "2rem" }}></i>
+                                                <h4 className="mb-0">{!summary ? 0 : summary.totalLeadsAdded.total}</h4>
+                                                <small className="text-muted">Database Uploaded</small>
+                                              </div>
+                                            </div>
+                                    
+                                            
+                                            <div className="col-12 col-md-6 col-lg-4">
+                                              <div className="card text-center p-3">
+                                                <i className="bi bi-easel2-fill" style={{ fontSize: "2rem"}}></i>
+                                                <h4 className="mb-0">{!summary ? 0 : summary.totalPresentations.total}</h4>
+                                                <small className="text-muted">Leads Presented</small>
+                                              </div>
+                                            </div>
+                                    
+                                            
+                                            <div className="col-12 col-md-6 col-lg-4">
+                                              <div className="card text-center p-3">
+                                                <i className="bi bi-person" style={{ fontSize: "2rem"}}></i>
+                                                <h4 className="mb-0">{!summary ? 0 : summary.followUpScheduled.total}</h4>
+                                                <small className="text-muted">Follow Up</small>
+                                              </div>
+                                            </div>
+      
+                                            <div className="col-12 col-md-6 col-lg-4">
+                                              <div className="card text-center p-3">
+                                                <i className="bi bi-clipboard2-check" style={{ fontSize: "2rem", color: 'green' }}></i>
+                                                <h4 className="mb-0" style={{color: 'green'}}>{!summary ? 0 : summary.finalStatus['Closed'].total}</h4>
+                                                <small className="text-muted">Closed</small>
+                                              </div>
+                                            </div>
+      
+                                            <div className="col-12 col-md-6 col-lg-4">
+                                              <div className="card text-center p-3">
+                                                <i className="bi bi-clipboard2-plus" style={{ fontSize: "2rem", color: '#a49000' }}></i>
+                                                <h4 className="mb-0" style={{color: '#a49000'}}>{!summary ? 0 : summary.finalStatus['Booking'].total}</h4>
+                                                <small className="text-muted">Booked</small>
+                                              </div>
+                                            </div>
+      
+                                            <div className="col-12 col-md-6 col-lg-4">
+                                              <div className="card text-center p-3">
+                                                <i className="bi bi-clipboard2-x" style={{ fontSize: "2rem", color: 'red' }}></i>
+                                                <h4 className="mb-0" style={{color: 'red'}}>{!summary ? 0 : summary.finalStatus['Rejected'].total}</h4>
+                                                <small className="text-muted">Rejected</small>
+                                              </div>
+                                            </div>
+                                    
+                                            {/* Statistics Chart Placeholder */}
+                                            {/* <div className="col-12">
+                                              <div className="card p-3">
+                                                <h5>Statistics</h5>
+                                                <div style={{ height: "200px", backgroundColor: "#f8d7da" }} className="d-flex justify-content-center align-items-center">
+                                                  <span className="text-muted">[Chart Here]</span>
+                                                </div>
+                                              </div>
+                                            </div> */}
+                                    
+                                            {/* Bottom 3 Panels */}
+                                            <div className="col-12 col-md-12">
+                                              <div className="card p-3">
+                                                <h6 className="text-dark" style={{fontWeight: 'bold'}}>Follow Up</h6>
+                                                <div className="d-flex justify-content-between align-items-center my-3">
+                                                  <span style={{fontSize: '0.9rem'}}>to Booking Rate (%)</span>
+                                                  <h5 className="mb-0 text-dark">{!summary ? 0 : summary.followUpToBookingRate.total}%</h5>
+                                                </div>
+                                                <div className="d-flex justify-content-between align-items-center my-3">
+                                                  <span style={{fontSize: '0.9rem'}}>to Closed Rate (%)</span>
+                                                  <h5 className="mb-0 text-dark">{!summary ? 0 : summary.followUpToClosedRate.total}%</h5>
+                                                </div>
+                                                <div className="d-flex justify-content-between align-items-center my-3">
+                                                  <span style={{fontSize: '0.9rem'}}>to Rejected Rate (%)</span>
+                                                  <h5 className="mb-0 text-dark">{!summary ? 0 : summary.followUpToRejectedRate.total}%</h5>
+                                                </div>
+                                              </div>
+                                            </div>
+      
+                                            <div className="col-12 col-md-6">
+                                              <div className="card p-3">
+                                                <h6 className="text-dark" style={{fontWeight: 'bold'}}>Average Follow Up</h6>
+                                                <div className="d-flex justify-content-between align-items-center my-3">
+                                                  <span style={{fontSize: '0.9rem'}}>Per Lead</span>
+                                                  <h5 className="mb-0 text-dark">{!summary ? 0 : summary.avgFollowUpPerLead.total}</h5>
+                                                </div>
+                                                <div className="d-flex justify-content-between align-items-center my-3">
+                                                  <span style={{fontSize: '0.9rem'}}>Per Closed Lead</span>
+                                                  <h5 className="mb-0 text-dark">{!summary ? 0 : summary.followUpPerCloseRatio.total}</h5>
+                                                </div>
+                                              </div>
+                                            </div>
+                                    
+                                            <div className="col-12 col-md-6">
+                                              <div className="card p-3">
+                                                <h6 className="text-dark" style={{fontWeight: 'bold'}}>Booking</h6>
+                                                <div className="d-flex justify-content-between align-items-center my-3">
+                                                  <span style={{fontSize: '0.9rem'}}>to Closed Rate (%)</span>
+                                                  <h5 className="mb-0 text-dark">{!summary ? 0 : summary.bookingToClosedRate.total}%</h5>
+                                                </div>
+                                                <div className="d-flex justify-content-between align-items-center my-3">
+                                                  <span style={{fontSize: '0.9rem'}}>to Rejected Rate (%)</span>
+                                                  <h5 className="mb-0 text-dark">{!summary ? 0 : summary.bookingToRejectedRate.total}%</h5>
+                                                </div>
+                                              </div>
+                                            </div>
+      
+                                            <div className="col-12 col-md-12">
+                                              <div className="card p-3">
+                                                <h6 className="text-dark" style={{fontWeight: 'bold'}}>Summary by Date</h6>
+                                                <div className="table-responsive mt-4" style={{fontSize: '0.8rem', whiteSpace: 'nowrap', maxHeight: '300px', overflow: 'auto'}}>
+                                                  <table className="table table-bordered table-hover table-sm">
+                                                    <thead className="table-light">
+                                                      <tr>
+                                                        <th>Date</th>
+                                                        <th>Leads Added</th>
+                                                        <th>Presentation</th>
+                                                        <th>Follow Up</th>
+                                                        <th>Closed</th>
+                                                        <th>Rejected</th>
+                                                        <th>Booking</th>
+                                                        <th>Targeted Sales</th>
+                                                        <th>Actual Sales</th>
+                                                        <th>Sales Gap</th>
+                                                      </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    {getDateRangeList(filterDate[0], filterDate[1]).map((date) => {
+                                                      const dateStr = new Date(date).toISOString().split("T")[0];
+                                                      if (loading) return;
+      
+                                                      // Helper untuk sumkan value by all user
+                                                      const sumByDateFromUsers = (nestedObj) => {
+                                                        return Object.values(nestedObj || {}).reduce((sum, userMap) => {
+                                                          return sum + (userMap?.[dateStr] || 0);
+                                                        }, 0);
+                                                      };
+      
+                                                      const leadsAdded = sumByDateFromUsers(summary.totalLeadsAdded.countByDate);
+                                                      const presentations = sumByDateFromUsers(summary.totalPresentations.countByDate);
+                                                      const followUps = sumByDateFromUsers(summary.followUpScheduled.countByDate);
+                                                      const closed = sumByDateFromUsers(summary.finalStatus.Closed.countByDate);
+                                                      const rejected = sumByDateFromUsers(summary.finalStatus.Rejected.countByDate);
+                                                      const booking = sumByDateFromUsers(summary.finalStatus.Booking.countByDate);
+      
+                                                      const targetAmount = Object.values(summary.salesGapSummary.countByDate || {}).reduce((sum, userMap) => {
+                                                        return sum + (userMap?.[dateStr]?.targetAmount || 0);
+                                                      }, 0);
+                                                      const actualSales = Object.values(summary.salesGapSummary.countByDate || {}).reduce((sum, userMap) => {
+                                                        return sum + (userMap?.[dateStr]?.actualSalesAmount || 0);
+                                                      }, 0);
+                                                      const salesGap = Object.values(summary.salesGapSummary.countByDate || {}).reduce((sum, userMap) => {
+                                                        return sum + ((userMap?.[dateStr]?.salesGap || 0) * -1);
+                                                      }, 0);
+      
+                                                      return (
+                                                        <tr key={dateStr}>
+                                                          <td>{dateStr}</td>
+                                                          <td style={{ color: leadsAdded ? '' : 'red' }}>{leadsAdded}</td>
+                                                          <td style={{ color: presentations ? '' : 'red' }}>{presentations}</td>
+                                                          <td style={{ color: followUps ? '' : 'red' }}>{followUps}</td>
+                                                          <td style={{ color: closed ? '' : 'red' }}>{closed}</td>
+                                                          <td style={{ color: rejected ? '' : 'red' }}>{rejected}</td>
+                                                          <td style={{ color: booking ? '' : 'red' }}>{booking}</td>
+                                                          <td style={{ color: targetAmount === 0 ? 'red' : '' }}>
+                                                            RM {Number(targetAmount).toLocaleString('en-MY', { minimumFractionDigits: 2 })}
+                                                          </td>
+                                                          <td style={{ color: actualSales >= targetAmount ? 'green' : 'red' }}>
+                                                            RM {Number(actualSales).toLocaleString('en-MY', { minimumFractionDigits: 2 })}
+                                                          </td>
+                                                          <td style={{ color: salesGap < 0 ? 'red' : salesGap > 0 ? 'green' : '' }}>
+                                                            RM {Number(salesGap).toLocaleString('en-MY', { minimumFractionDigits: 2 })}
+                                                          </td>
+                                                        </tr>
+                                                      );
+                                                    })}
+      
+                                                    </tbody>
+                                                  </table>
+                                                </div>
+                                              </div>
+                                            </div>
+      
+                                            <div className="col text-start">
+                                              {summary && <>
+                                            <div className="d-grid"><button type="button" onClick={() => exportToExcelTeam(summary, filterDate[0], filterDate[1])} className="btn btn-md btn-dark">
+                                              <i class="bi bi-download"></i> Export
+                                          </button></div>
+                                          </>}          
+                                              </div>
+      
+      
+      
+                                          </div>
+                                        </div>
+                                    ) : section === 'Manager' ? (<>
+
+                                    <div className="container-fluid p-3">
+
+                                    <div className="row">
+                                      
+                                            <div className="col-lg-6 form-floating  text-start">
+                                            <Flatpickr
+                                              id="floatingInput1"
+                                              className='form-control shadow-none mb-3'
+                                              value={filterDate}
+                                              placeholder={`Selected Date:${formattedDate}`}
+                                              options={{
+                                                  dateFormat: "d-m-Y",
+                                                  mode: "range",
+                                                  disableMobile: true
+                                              }}
+                                              onChange={handleDateChange}
+                                              />
+                                              <label className='mx-3' for="floatingInput1">select date:</label>
+                                            </div>
+
+                                            <div className="col-lg-6 text-start position-relative floating-select">
+                                            <label className={`floating-label ${selectedManager.length > 0 ? 'has-value' : ''} mx-2`}>
+                                              select user:
+                                            </label>
+                                            <Select
+                                            styles={{
+                                              control: (base, state) => ({
+                                                ...base,
+                                                borderColor: state.isFocused ? "#86b7fe" : "#ced4da",
+                                                boxShadow: state.isFocused
+                                                  ? "0 0 0 0 rgba(13, 110, 253, 0.25)"
+                                                  : "none",
+                                                "&:hover": {
+                                                  borderColor: state.isFocused ? "#86b7fe" : "#ced4da",
+                                                },
+                                                minHeight: 38,
+                                                borderRadius: "0.375rem",
+                                              }),
+                                            }}
+                                              classNamePrefix="react-select"
+                                              options={managerOptions}
+                                              onChange={(e) => {
+                                                if (e) fetchManagerData(e.value, e.label);
+                                              }}
+                                              isSearchable
+                                              placeholder=""
+                                              value={ selectedManager[0] || null}
+                                              id="floatingInput2"
+                                            />
+                                          </div>
+
+                                            
+                                        </div>
+
+
+
+      
+                                      
+                                            
+      
+                                            <div className="row my-4">
+                                              <h5 style={{textTransform:"capitalize"}}>Manager Summary</h5>
+                                              <h3 style={{textTransform:"capitalize"}}>{selectedManager.length > 0 && selectedManager[0].label}</h3>
+                                              <small className="text-muted">{`${filterDate[0]}`.slice(4,15)} to {`${filterDate[1]}`.slice(4,15)}</small>
+                                            </div>
+      
+                                          <div className="row g-3">
+      
+                                          <div className="col-12 col-md-4">
+                                              <div className="card text-center p-3">
+                                                <i className="bi bi-cash-coin" style={{ fontSize: "2rem", color: "green" }}></i>
+                                                <h4 className="mb-0">RM {!managerSummary ? '0.00' : Number(managerSummary.salesGapSummary.targetAmount).toLocaleString('en-MY', {
+                                                  minimumFractionDigits: 2,
+                                                  maximumFractionDigits: 2
+                                                })}</h4>
+                                                <small className="text-muted">Targeted Sales</small>
+                                              </div>
+                                            </div>
+                                    
+                                            
+                                            <div className="col-12 col-md-4">
+                                              <div className="card text-center p-3">
+                                                <i className="bi bi-cash-coin" style={{ fontSize: "2rem", color: "green"}}></i>
+                                                <h4 className="mb-0">RM {!managerSummary ? '0.00' : Number(managerSummary.salesGapSummary.actualSalesAmount).toLocaleString('en-MY', {
+                                                  minimumFractionDigits: 2,
+                                                  maximumFractionDigits: 2
+                                                })}</h4>
+                                                <small className="text-muted">Actual Sales</small>
+                                              </div>
+                                            </div>
+                                    
+                                            
+                                            <div className="col-12 col-md-4">
+                                              <div className="card text-center p-3">
+                                                {!managerSummary ? (<></>): (<>
+                                                {managerSummary.salesGapSummary.salesGap <= 0 ? (<>
+                                                <i className="bi bi-cash-coin" style={{ fontSize: "2rem", color: "green"}}></i>
+                                                <h4 className="mb-0" style={{color: "green"}}>RM {!managerSummary ? '0.00' : Number(managerSummary.salesGapSummary.salesGap * -1).toLocaleString('en-MY', {
+                                                  minimumFractionDigits: 2,
+                                                  maximumFractionDigits: 2
+                                                })}</h4>
+                                                </>) : (<>
+                                                  <i className="bi bi-cash-coin" style={{ fontSize: "2rem", color: "red"}}></i>
+                                                <h4 className="mb-0" style={{color: "red"}}>RM {!managerSummary ? '0.00' : Number(managerSummary.salesGapSummary.salesGap * -1).toLocaleString('en-MY', {
+                                                  minimumFractionDigits: 2,
+                                                  maximumFractionDigits: 2
+                                                })}</h4>
+                                                </>)}
+                                                
+                                                </>)}
+                                                <small className="text-muted">Sales Gap</small>
+                                              </div>
+                                            </div>
+                                            
+                                            <div className="col-12 col-md-4">
+                                              <div className="card text-center p-3">
+                                                <i className="bi bi-cloud-plus-fill" style={{ fontSize: "2rem" }}></i>
+                                                <h4 className="mb-0">{!managerSummary ? 0 : managerSummary.totalLeadsAdded.total}</h4>
+                                                <small className="text-muted">Database Uploaded</small>
+                                              </div>
+                                            </div>
+                                    
+                                            
+                                            <div className="col-12 col-md-4">
+                                              <div className="card text-center p-3">
+                                                <i className="bi bi-easel2-fill" style={{ fontSize: "2rem"}}></i>
+                                                <h4 className="mb-0">{!managerSummary ? 0 : managerSummary.totalPresentations.total}</h4>
+                                                <small className="text-muted">Leads Presented</small>
+                                              </div>
+                                            </div>
+                                    
+                                            
+                                            <div className="col-12 col-md-4">
+                                              <div className="card text-center p-3">
+                                                <i className="bi bi-person" style={{ fontSize: "2rem"}}></i>
+                                                <h4 className="mb-0">{!managerSummary ? 0 : managerSummary.followUpScheduled.total}</h4>
+                                                <small className="text-muted">Follow Up</small>
+                                              </div>
+                                            </div>
+      
+                                            <div className="col-12 col-md-4">
+                                              <div className="card text-center p-3">
+                                                <i className="bi bi-clipboard2-check" style={{ fontSize: "2rem", color: 'green' }}></i>
+                                                <h4 className="mb-0" style={{color: 'green'}}>{!managerSummary ? 0 : managerSummary.finalStatus['Closed'].total}</h4>
+                                                <small className="text-muted">Closed</small>
+                                              </div>
+                                            </div>
+      
+                                            <div className="col-12 col-md-4">
+                                              <div className="card text-center p-3">
+                                                <i className="bi bi-clipboard2-plus" style={{ fontSize: "2rem", color: '#a49000' }}></i>
+                                                <h4 className="mb-0" style={{color: '#a49000'}}>{!managerSummary ? 0 : managerSummary.finalStatus['Booking'].total}</h4>
+                                                <small className="text-muted">Booked</small>
+                                              </div>
+                                            </div>
+      
+                                            <div className="col-12 col-md-4">
+                                              <div className="card text-center p-3">
+                                                <i className="bi bi-clipboard2-x" style={{ fontSize: "2rem", color: 'red' }}></i>
+                                                <h4 className="mb-0" style={{color: 'red'}}>{!managerSummary ? 0 : managerSummary.finalStatus['Rejected'].total}</h4>
+                                                <small className="text-muted">Rejected</small>
+                                              </div>
+                                            </div>
+                                    
+                                            {/* Statistics Chart Placeholder */}
+                                            {/* <div className="col-12">
+                                              <div className="card p-3">
+                                                <h5>Statistics</h5>
+                                                <div style={{ height: "200px", backgroundColor: "#f8d7da" }} className="d-flex justify-content-center align-items-center">
+                                                  <span className="text-muted">[Chart Here]</span>
+                                                </div>
+                                              </div>
+                                            </div> */}
+                                    
+                                            {/* Bottom 3 Panels */}
+                                            <div className="col-12 col-md-12">
+                                              <div className="card p-3">
+                                                <h6 className="text-dark" style={{fontWeight: 'bold'}}>Follow Up</h6>
+                                                <div className="d-flex justify-content-between align-items-center my-3">
+                                                  <span style={{fontSize: '0.9rem'}}>to Booking Rate (%)</span>
+                                                  <h5 className="mb-0 text-dark">{!managerSummary ? 0 : managerSummary.followUpToBookingRate.total}%</h5>
+                                                </div>
+                                                <div className="d-flex justify-content-between align-items-center my-3">
+                                                  <span style={{fontSize: '0.9rem'}}>to Closed Rate (%)</span>
+                                                  <h5 className="mb-0 text-dark">{!managerSummary ? 0 : managerSummary.followUpToClosedRate.total}%</h5>
+                                                </div>
+                                                <div className="d-flex justify-content-between align-items-center my-3">
+                                                  <span style={{fontSize: '0.9rem'}}>to Rejected Rate (%)</span>
+                                                  <h5 className="mb-0 text-dark">{!managerSummary ? 0 : managerSummary.followUpToRejectedRate.total}%</h5>
+                                                </div>
+                                              </div>
+                                            </div>
+      
+                                            <div className="col-12 col-md-6">
+                                              <div className="card p-3">
+                                                <h6 className="text-dark" style={{fontWeight: 'bold'}}>Average Follow Up</h6>
+                                                <div className="d-flex justify-content-between align-items-center my-3">
+                                                  <span style={{fontSize: '0.9rem'}}>Per Lead</span>
+                                                  <h5 className="mb-0 text-dark">{!managerSummary ? 0 : managerSummary.avgFollowUpPerLead.total}</h5>
+                                                </div>
+                                                <div className="d-flex justify-content-between align-items-center my-3">
+                                                  <span style={{fontSize: '0.9rem'}}>Per Closed Lead</span>
+                                                  <h5 className="mb-0 text-dark">{!managerSummary ? 0 : managerSummary.followUpPerCloseRatio.total}</h5>
+                                                </div>
+                                              </div>
+                                            </div>
+                                    
+                                            <div className="col-12 col-md-6">
+                                              <div className="card p-3">
+                                                <h6 className="text-dark" style={{fontWeight: 'bold'}}>Booking</h6>
+                                                <div className="d-flex justify-content-between align-items-center my-3">
+                                                  <span style={{fontSize: '0.9rem'}}>to Closed Rate (%)</span>
+                                                  <h5 className="mb-0 text-dark">{!managerSummary ? 0 : managerSummary.bookingToClosedRate.total}%</h5>
+                                                </div>
+                                                <div className="d-flex justify-content-between align-items-center my-3">
+                                                  <span style={{fontSize: '0.9rem'}}>to Rejected Rate (%)</span>
+                                                  <h5 className="mb-0 text-dark">{!managerSummary ? 0 : managerSummary.bookingToRejectedRate.total}%</h5>
+                                                </div>
+                                              </div>
+                                            </div>
+      
+                                            <div className="col-12 col-md-12">
+                                              <div className="card p-3">
+                                                <h6 className="text-dark" style={{fontWeight: 'bold'}}>Summary by Date</h6>
+                                                <div className="table-responsive mt-4" style={{fontSize: '0.8rem', whiteSpace: 'nowrap', maxHeight: '300px', overflow: 'auto'}}>
+                                                  <table className="table table-bordered table-hover table-sm">
+                                                    <thead className="table-light">
+                                                      <tr>
+                                                        <th>Date</th>
+                                                        <th>Leads Added</th>
+                                                        <th>Presentation</th>
+                                                        <th>Follow Up</th>
+                                                        <th>Closed</th>
+                                                        <th>Rejected</th>
+                                                        <th>Booking</th>
+                                                        <th>Targeted Sales</th>
+                                                        <th>Actual Sales</th>
+                                                        <th>Sales Gap</th>
+                                                      </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    {getDateRangeList(filterDate[0], filterDate[1]).map((date) => {
+                                                      const dateStr = new Date(date).toISOString().split("T")[0];
+      
+                                                      if(loading === true){
+                                                        return ;
+                                                      }else {
+                                                        const sumByDateFromUsers = (nestedObj) => {
+                                                            return Object.values(nestedObj || {}).reduce((sum, userMap) => {
+                                                              return sum + (userMap?.[dateStr] || 0);
+                                                            }, 0);
+                                                          };
+          
+                                                          const leadsAdded = sumByDateFromUsers(managerSummary.totalLeadsAdded.countByDate);
+                                                          const presentations = sumByDateFromUsers(managerSummary.totalPresentations.countByDate);
+                                                          const followUps = sumByDateFromUsers(managerSummary.followUpScheduled.countByDate);
+                                                          const closed = sumByDateFromUsers(managerSummary.finalStatus.Closed.countByDate);
+                                                          const rejected = sumByDateFromUsers(managerSummary.finalStatus.Rejected.countByDate);
+                                                          const booking = sumByDateFromUsers(managerSummary.finalStatus.Booking.countByDate);
+          
+                                                          const targetAmount = Object.values(managerSummary.salesGapSummary.countByDate || {}).reduce((sum, userMap) => {
+                                                            return sum + (userMap?.[dateStr]?.targetAmount || 0);
+                                                          }, 0);
+                                                          const actualSales = Object.values(managerSummary.salesGapSummary.countByDate || {}).reduce((sum, userMap) => {
+                                                            return sum + (userMap?.[dateStr]?.actualSalesAmount || 0);
+                                                          }, 0);
+                                                          const salesGap = Object.values(managerSummary.salesGapSummary.countByDate || {}).reduce((sum, userMap) => {
+                                                            return sum + ((userMap?.[dateStr]?.salesGap || 0) * -1);
+                                                          }, 0);
+                                                      
+                                                          return (
+                                                            <tr key={dateStr}>
+                                                              <td>{dateStr}</td>
+                                                              <td style={{ color: leadsAdded ? '' : 'red' }}>{leadsAdded}</td>
+                                                              <td style={{ color: presentations ? '' : 'red' }}>{presentations}</td>
+                                                              <td style={{ color: followUps ? '' : 'red' }}>{followUps}</td>
+                                                              <td style={{ color: closed ? '' : 'red' }}>{closed}</td>
+                                                              <td style={{ color: rejected ? '' : 'red' }}>{rejected}</td>
+                                                              <td style={{ color: booking ? '' : 'red' }}>{booking}</td>
+                                                              <td style={{ color: targetAmount === 0 ? 'red' : '' }}>
+                                                                RM {Number(targetAmount).toLocaleString('en-MY', { minimumFractionDigits: 2 })}
+                                                              </td>
+                                                              <td style={{ color: actualSales >= targetAmount ? 'green' : 'red' }}>
+                                                                RM {Number(actualSales).toLocaleString('en-MY', { minimumFractionDigits: 2 })}
+                                                              </td>
+                                                              <td style={{ color: salesGap < 0 ? 'red' : salesGap > 0 ? 'green' : '' }}>
+                                                                RM {Number(salesGap).toLocaleString('en-MY', { minimumFractionDigits: 2 })}
+                                                              </td>
+                                                            </tr>
+                                                          );
+                                                    }})}
+      
+                                                    </tbody>
+                                                  </table>
+                                                </div>
+                                              </div>
+                                            </div>
+      
+                                            <div className="col text-start">
+                                              {managerSummary && selectedManager.length > 0 && <>
+                                            <div className="d-grid"><button type="button" onClick={() => exportToExcelManager(managerSummary, filterDate[0], filterDate[1])} className="btn btn-md btn-dark">
+                                              <i class="bi bi-download"></i> Export
+                                          </button></div>
+                                          </>}          
+                                              </div>
+      
+      
+      
+                                          </div>
+                                        </div>
+                                    
+                                    </>) : (<>
+
+                                    <div className="container-fluid p-3">
+
+                                    <div className="row">
+                                    
+                                            <div className="col-lg-6 form-floating  text-start">
+                                            <Flatpickr
+                                            id="floatingInput1"
+                                            className='form-control shadow-none mb-3'
+                                            value={filterDate}
+                                            placeholder={`Selected Date:${formattedDate}`}
+                                            options={{
+                                                dateFormat: "d-m-Y",
+                                                mode: "range",
+                                                disableMobile: true
+                                            }}
+                                            onChange={handleDateChange}
+                                            />
+                                            <label className='mx-3' for="floatingInput1">select date:</label>
+                                            </div>
+
+                                            <div className="col-lg-6 text-start position-relative floating-select">
+                                            <label className={`floating-label ${selectedUser.length > 0 ? 'has-value' : ''} mx-2`}>
+                                            select user:
+                                            </label>
+                                            <Select
+                                            styles={{
+                                            control: (base, state) => ({
+                                                ...base,
+                                                borderColor: state.isFocused ? "#86b7fe" : "#ced4da",
+                                                boxShadow: state.isFocused
+                                                ? "0 0 0 0 rgba(13, 110, 253, 0.25)"
+                                                : "none",
+                                                "&:hover": {
+                                                borderColor: state.isFocused ? "#86b7fe" : "#ced4da",
+                                                },
+                                                minHeight: 38,
+                                                borderRadius: "0.375rem",
+                                            }),
+                                            }}
+                                            classNamePrefix="react-select"
+                                            options={groupedOptions}
+                                            onChange={(e) => {
+                                                if (e) fetchIndividualData(e.value, e.label);
+                                            }}
+                                            isSearchable
+                                            placeholder=""
+                                            value={ selectedUser[0] || null}
+                                            id="floatingInput2"
+                                            />
+                                        </div>
+
+                                            
+                                        </div>
+
+
+
+
+                                    
+                                            
+
+                                            <div className="row my-4">
+                                            <h5 style={{textTransform:"capitalize"}}>Individual Summary</h5>
+                                            <h3 style={{textTransform:"capitalize"}}>{selectedUser.length > 0 && selectedUser[0].label}</h3>
+                                            <small className="text-muted">{`${filterDate[0]}`.slice(4,15)} to {`${filterDate[1]}`.slice(4,15)}</small>
+                                            </div>
+
+                                        <div className="row g-3">
+
+                                        <div className="col-12 col-md-4">
+                                            <div className="card text-center p-3">
+                                                <i className="bi bi-cash-coin" style={{ fontSize: "2rem", color: "green" }}></i>
+                                                <h4 className="mb-0">RM {!IndividualSummary ? '0.00' : Number(IndividualSummary.salesGapSummary.targetAmount).toLocaleString('en-MY', {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2
+                                                })}</h4>
+                                                <small className="text-muted">Targeted Sales</small>
+                                            </div>
+                                            </div>
+
+                                            
+                                            <div className="col-12 col-md-4">
+                                            <div className="card text-center p-3">
+                                                <i className="bi bi-cash-coin" style={{ fontSize: "2rem", color: "green"}}></i>
+                                                <h4 className="mb-0">RM {!IndividualSummary ? '0.00' : Number(IndividualSummary.salesGapSummary.actualSalesAmount).toLocaleString('en-MY', {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2
+                                                })}</h4>
+                                                <small className="text-muted">Actual Sales</small>
+                                            </div>
+                                            </div>
+
+                                            
+                                            <div className="col-12 col-md-4">
+                                            <div className="card text-center p-3">
+                                                {!IndividualSummary ? (<></>): (<>
+                                                {IndividualSummary.salesGapSummary.salesGap <= 0 ? (<>
+                                                <i className="bi bi-cash-coin" style={{ fontSize: "2rem", color: "green"}}></i>
+                                                <h4 className="mb-0" style={{color: "green"}}>RM {!IndividualSummary ? '0.00' : Number(IndividualSummary.salesGapSummary.salesGap * -1).toLocaleString('en-MY', {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2
+                                                })}</h4>
+                                                </>) : (<>
+                                                <i className="bi bi-cash-coin" style={{ fontSize: "2rem", color: "red"}}></i>
+                                                <h4 className="mb-0" style={{color: "red"}}>RM {!IndividualSummary ? '0.00' : Number(IndividualSummary.salesGapSummary.salesGap * -1).toLocaleString('en-MY', {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2
+                                                })}</h4>
+                                                </>)}
+                                                
+                                                </>)}
+                                                <small className="text-muted">Sales Gap</small>
+                                            </div>
+                                            </div>
+                                            
+                                            <div className="col-12 col-md-4">
+                                            <div className="card text-center p-3">
+                                                <i className="bi bi-cloud-plus-fill" style={{ fontSize: "2rem" }}></i>
+                                                <h4 className="mb-0">{!IndividualSummary ? 0 : IndividualSummary.totalLeadsAdded.total}</h4>
+                                                <small className="text-muted">Database Uploaded</small>
+                                            </div>
+                                            </div>
+
+                                            
+                                            <div className="col-12 col-md-4">
+                                            <div className="card text-center p-3">
+                                                <i className="bi bi-easel2-fill" style={{ fontSize: "2rem"}}></i>
+                                                <h4 className="mb-0">{!IndividualSummary ? 0 : IndividualSummary.totalPresentations.total}</h4>
+                                                <small className="text-muted">Leads Presented</small>
+                                            </div>
+                                            </div>
+
+                                            
+                                            <div className="col-12 col-md-4">
+                                            <div className="card text-center p-3">
+                                                <i className="bi bi-person" style={{ fontSize: "2rem"}}></i>
+                                                <h4 className="mb-0">{!IndividualSummary ? 0 : IndividualSummary.followUpScheduled.total}</h4>
+                                                <small className="text-muted">Follow Up</small>
+                                            </div>
+                                            </div>
+
+                                            <div className="col-12 col-md-4">
+                                            <div className="card text-center p-3">
+                                                <i className="bi bi-clipboard2-check" style={{ fontSize: "2rem", color: 'green' }}></i>
+                                                <h4 className="mb-0" style={{color: 'green'}}>{!IndividualSummary ? 0 : IndividualSummary.finalStatus['Closed'].total}</h4>
+                                                <small className="text-muted">Closed</small>
+                                            </div>
+                                            </div>
+
+                                            <div className="col-12 col-md-4">
+                                            <div className="card text-center p-3">
+                                                <i className="bi bi-clipboard2-plus" style={{ fontSize: "2rem", color: '#a49000' }}></i>
+                                                <h4 className="mb-0" style={{color: '#a49000'}}>{!IndividualSummary ? 0 : IndividualSummary.finalStatus['Booking'].total}</h4>
+                                                <small className="text-muted">Booked</small>
+                                            </div>
+                                            </div>
+
+                                            <div className="col-12 col-md-4">
+                                            <div className="card text-center p-3">
+                                                <i className="bi bi-clipboard2-x" style={{ fontSize: "2rem", color: 'red' }}></i>
+                                                <h4 className="mb-0" style={{color: 'red'}}>{!IndividualSummary ? 0 : IndividualSummary.finalStatus['Rejected'].total}</h4>
+                                                <small className="text-muted">Rejected</small>
+                                            </div>
+                                            </div>
+
+                                            {/* Statistics Chart Placeholder */}
+                                            {/* <div className="col-12">
+                                            <div className="card p-3">
+                                                <h5>Statistics</h5>
+                                                <div style={{ height: "200px", backgroundColor: "#f8d7da" }} className="d-flex justify-content-center align-items-center">
+                                                <span className="text-muted">[Chart Here]</span>
+                                                </div>
+                                            </div>
+                                            </div> */}
+
+                                            {/* Bottom 3 Panels */}
+                                            <div className="col-12 col-md-12">
+                                            <div className="card p-3">
+                                                <h6 className="text-dark" style={{fontWeight: 'bold'}}>Follow Up</h6>
+                                                <div className="d-flex justify-content-between align-items-center my-3">
+                                                <span style={{fontSize: '0.9rem'}}>to Booking Rate (%)</span>
+                                                <h5 className="mb-0 text-dark">{!IndividualSummary ? 0 : IndividualSummary.followUpToBookingRate.total}%</h5>
+                                                </div>
+                                                <div className="d-flex justify-content-between align-items-center my-3">
+                                                <span style={{fontSize: '0.9rem'}}>to Closed Rate (%)</span>
+                                                <h5 className="mb-0 text-dark">{!IndividualSummary ? 0 : IndividualSummary.followUpToClosedRate.total}%</h5>
+                                                </div>
+                                                <div className="d-flex justify-content-between align-items-center my-3">
+                                                <span style={{fontSize: '0.9rem'}}>to Rejected Rate (%)</span>
+                                                <h5 className="mb-0 text-dark">{!IndividualSummary ? 0 : IndividualSummary.followUpToRejectedRate.total}%</h5>
+                                                </div>
+                                            </div>
+                                            </div>
+
+                                            <div className="col-12 col-md-6">
+                                            <div className="card p-3">
+                                                <h6 className="text-dark" style={{fontWeight: 'bold'}}>Average Follow Up</h6>
+                                                <div className="d-flex justify-content-between align-items-center my-3">
+                                                <span style={{fontSize: '0.9rem'}}>Per Lead</span>
+                                                <h5 className="mb-0 text-dark">{!IndividualSummary ? 0 : IndividualSummary.avgFollowUpPerLead.total}</h5>
+                                                </div>
+                                                <div className="d-flex justify-content-between align-items-center my-3">
+                                                <span style={{fontSize: '0.9rem'}}>Per Closed Lead</span>
+                                                <h5 className="mb-0 text-dark">{!IndividualSummary ? 0 : IndividualSummary.followUpPerCloseRatio.total}</h5>
+                                                </div>
+                                            </div>
+                                            </div>
+
+                                            <div className="col-12 col-md-6">
+                                            <div className="card p-3">
+                                                <h6 className="text-dark" style={{fontWeight: 'bold'}}>Booking</h6>
+                                                <div className="d-flex justify-content-between align-items-center my-3">
+                                                <span style={{fontSize: '0.9rem'}}>to Closed Rate (%)</span>
+                                                <h5 className="mb-0 text-dark">{!IndividualSummary ? 0 : IndividualSummary.bookingToClosedRate.total}%</h5>
+                                                </div>
+                                                <div className="d-flex justify-content-between align-items-center my-3">
+                                                <span style={{fontSize: '0.9rem'}}>to Rejected Rate (%)</span>
+                                                <h5 className="mb-0 text-dark">{!IndividualSummary ? 0 : IndividualSummary.bookingToRejectedRate.total}%</h5>
+                                                </div>
+                                            </div>
+                                            </div>
+
+                                            <div className="col-12 col-md-12">
+                                            <div className="card p-3">
+                                                <h6 className="text-dark" style={{fontWeight: 'bold'}}>Summary by Date</h6>
+                                                <div className="table-responsive mt-4" style={{fontSize: '0.8rem', whiteSpace: 'nowrap', maxHeight: '300px', overflow: 'auto'}}>
+                                                <table className="table table-bordered table-hover table-sm">
+                                                    <thead className="table-light">
+                                                    <tr>
+                                                        <th>Date</th>
+                                                        <th>Leads Added</th>
+                                                        <th>Presentation</th>
+                                                        <th>Follow Up</th>
+                                                        <th>Closed</th>
+                                                        <th>Rejected</th>
+                                                        <th>Booking</th>
+                                                        <th>Targeted Sales</th>
+                                                        <th>Actual Sales</th>
+                                                        <th>Sales Gap</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    {getDateRangeList(filterDate[0], filterDate[1]).map((date) => {
+                                                    const dateStr = new Date(date).toISOString().split("T")[0];
+
+                                                    if(loading === true){
+                                                        return ;
+                                                    }else {
+                                                        const targetAmount = IndividualSummary.salesGapSummary.countByDate?.[dateStr]?.targetAmount || 0;
+                                                        const actualSales = IndividualSummary.salesGapSummary.countByDate?.[dateStr]?.actualSalesAmount || 0;
+                                                        const salesGap = IndividualSummary.salesGapSummary.countByDate?.[dateStr]?.salesGap *-1 || 0;
+                                                    
+                                                        return (
+                                                        <tr key={dateStr}>
+                                                            <td>{dateStr}</td>
+                                                            <td style={{ color: IndividualSummary.totalLeadsAdded.countByDate?.[dateStr] ? '' : 'red' }}>
+                                                            {IndividualSummary.totalLeadsAdded.countByDate?.[dateStr] || 0}
+                                                            </td>
+                                                            <td style={{ color: IndividualSummary.totalPresentations.countByDate?.[dateStr] ? '' : 'red' }}>
+                                                            {IndividualSummary.totalPresentations.countByDate?.[dateStr] || 0}
+                                                            </td>
+                                                            <td style={{ color: IndividualSummary.followUpScheduled.countByDate?.[dateStr] ? '' : 'red' }}>
+                                                            {IndividualSummary.followUpScheduled.countByDate?.[dateStr] || 0}
+                                                            </td>
+                                                            <td style={{ color: IndividualSummary.finalStatus.Closed.countByDate?.[dateStr] ? '' : 'red' }}>
+                                                            {IndividualSummary.finalStatus.Closed.countByDate?.[dateStr] || 0}
+                                                            </td>
+                                                            <td style={{ color: IndividualSummary.finalStatus.Rejected.countByDate?.[dateStr] ? '' : 'red' }}>
+                                                            {IndividualSummary.finalStatus.Rejected.countByDate?.[dateStr] || 0}
+                                                            </td>
+                                                            <td style={{ color: IndividualSummary.finalStatus.Booking.countByDate?.[dateStr] ? '' : 'red' }}>
+                                                            {IndividualSummary.finalStatus.Booking.countByDate?.[dateStr] || 0}
+                                                            </td>
+                                                            <td style={{ color: targetAmount === 0 ? 'red' : '' }}>
+                                                            RM {Number(targetAmount).toLocaleString('en-MY', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                            </td>
+                                                            <td style={{ color: actualSales >= targetAmount ? 'green' : 'red' }}>
+                                                            RM {Number(actualSales).toLocaleString('en-MY', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                            </td>
+                                                            <td style={{ color: salesGap < 0 ? 'red' : salesGap > 0 ? 'green' : '' }}>
+                                                            RM {Number(salesGap).toLocaleString('en-MY', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                            </td>
+                                                        </tr>
+                                                        )
+                                                    }})}
+
+                                                            </tbody>
+                                                        </table>
+                                                        </div>
+                                                    </div>
+                                                    </div>
+
+                                                    <div className="col text-start">
+                                                    {IndividualSummary && selectedUser.length > 0 && <>
+                                                    <div className="d-grid"><button type="button" onClick={() => exportToExcelIndividual(IndividualSummary, filterDate[0], filterDate[1])} className="btn btn-md btn-dark">
+                                                    <i class="bi bi-download"></i> Export
+                                                </button></div>
+                                                </>}          
+                                                    </div>
+
+
+
+                                                </div>
+                                                </div>
+
+                                            </>)
+
+
+                                  
+                                      
+                                  )}
+                              </div>
+                          </div>
+                      </div>
+    
+            <div className="modal fade" id="setSalesTarget" tabIndex="-1" aria-labelledby="setSalesTarget" aria-hidden="true">
+              <div className="modal-dialog modal-dialog-centered">
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <h5 className="modal-title" id="setSalesTarget">Set Sales Target</h5>
+                    <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div className="modal-body text-start">
+                    <SalesTartget teamId={teamId} />
+                  </div>
+                </div>
+              </div>
+            </div>
+                  </>
+              )}
+                   
+          
+            </div>
+          </div>
+          
+          
+                    </div>    
+                  </div>
+      );
+}
+
+export default SuperTeamStatSummary

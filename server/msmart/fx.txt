@@ -1,0 +1,269 @@
+//1. Berapa Total Presentation dah buat dalam seminggu? Sebulan?
+
+async function getPresentationActivities(username, startDateStr, endDateStr) {
+  const statuses = ['Closed', 'Follow Up', 'Booking', 'Rejected'];
+
+  // Semua condition dalam satu array
+  const activityConditions = [
+    // Pattern untuk 'updated status from No Status to'
+    {
+      activity: {
+        [Op.like]: '%updated status from No Status to%',
+      }
+    },
+    // Patterns untuk 'added new database with status X'
+    ...statuses.map(status => ({
+      activity: {
+        [Op.like]: `%added new database with status ${status}%`
+      }
+    }))
+  ];
+
+  const result = await msmart_activity.findAll({
+    where: {
+      username: username,
+      [Op.or]: activityConditions,
+      createdAt: {
+        [Op.between]: [new Date(startDateStr), new Date(endDateStr)],
+      },
+    },
+  });
+
+  return result;
+}
+
+// 2. ⁠Rejection Rate (Follow Up vs Reject)
+
+async function getFollowUpDateActivities(username, startDateStr, endDateStr) {
+  const start = new Date(startDateStr);
+  const end = new Date(endDateStr);
+
+  const dates = [];
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    const monthStr = d.toLocaleString('en-US', { month: 'short' });
+    const dateStr = `${monthStr} ${d.getDate()} ${d.getFullYear()}`;
+    dates.push(dateStr);
+  }
+
+  const conditions = dates.map(date => ({
+    activity: {
+      [Op.like]: `%updated follow up date on ${date}%`
+    }
+  }));
+
+  return await msmart_activity.findAll({
+    where: {
+      username: username,
+      [Op.or]: conditions
+    }
+  });
+}
+
+async function getStatusChangeActivities(username, fromStatus, toStatus, startDateStr, endDateStr) {
+  const keyword = `%updated status from ${fromStatus} to ${toStatus}%`;
+
+  return await msmart_activity.findAll({
+    where: {
+      username: username,
+      activity: {
+        [Op.like]: keyword,
+      },
+      createdAt: {
+        [Op.between]: [new Date(startDateStr), new Date(endDateStr)],
+      },
+    },
+  });
+}
+
+const followToReject = await getStatusChangeActivities(username, 'Follow Up', 'Rejected', startDate, endDate);
+
+// 3. ⁠Closing Rate (Follow up vs Closed)
+
+async function getFollowUpDateActivities(username, startDateStr, endDateStr) {
+  const start = new Date(startDateStr);
+  const end = new Date(endDateStr);
+
+  const dates = [];
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    const monthStr = d.toLocaleString('en-US', { month: 'short' });
+    const dateStr = `${monthStr} ${d.getDate()} ${d.getFullYear()}`;
+    dates.push(dateStr);
+  }
+
+  const conditions = dates.map(date => ({
+    activity: {
+      [Op.like]: `%updated follow up date on ${date}%`
+    }
+  }));
+
+  return await msmart_activity.findAll({
+    where: {
+      username: username,
+      [Op.or]: conditions
+    }
+  });
+}
+
+async function getStatusChangeActivities(username, fromStatus, toStatus, startDateStr, endDateStr) {
+  const keyword = `%updated status from ${fromStatus} to ${toStatus}%`;
+
+  return await msmart_activity.findAll({
+    where: {
+      username: username,
+      activity: {
+        [Op.like]: keyword,
+      },
+      createdAt: {
+        [Op.between]: [new Date(startDateStr), new Date(endDateStr)],
+      },
+    },
+  });
+}
+
+const followUp = await getFollowUpDateActivities(username, startDate, endDate);
+const followToClosed = await getStatusChangeActivities(username, 'Follow Up', 'Closed', startDate, endDate);
+
+//4. ⁠Booking Rate (Follow up vs booking)
+
+async function getFollowUpDateActivities(username, startDateStr, endDateStr) {
+  const start = new Date(startDateStr);
+  const end = new Date(endDateStr);
+
+  const dates = [];
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    const monthStr = d.toLocaleString('en-US', { month: 'short' });
+    const dateStr = `${monthStr} ${d.getDate()} ${d.getFullYear()}`;
+    dates.push(dateStr);
+  }
+
+  const conditions = dates.map(date => ({
+    activity: {
+      [Op.like]: `%updated follow up date on ${date}%`
+    }
+  }));
+
+  return await msmart_activity.findAll({
+    where: {
+      username: username,
+      [Op.or]: conditions
+    }
+  });
+}
+
+async function getStatusChangeActivities(username, fromStatus, toStatus, startDateStr, endDateStr) {
+  const keyword = `%updated status from ${fromStatus} to ${toStatus}%`;
+
+  return await msmart_activity.findAll({
+    where: {
+      username: username,
+      activity: {
+        [Op.like]: keyword,
+      },
+      createdAt: {
+        [Op.between]: [new Date(startDateStr), new Date(endDateStr)],
+      },
+    },
+  });
+}
+
+//5. ⁠Booking To Close Rate (Booking vs close)
+
+async function getBookingRelatedActivities(username, startDateStr, endDateStr) {
+  const statuses = ['No Status', 'Follow Up', 'Rejected', 'Closed'];
+
+  const activityConditions = [
+    // Semua status ➜ Booking
+    ...statuses.map(status => ({
+      activity: {
+        [Op.like]: `%updated status from ${status} to Booking%`
+      }
+    })),
+    // Tambah yang added terus status Booking
+    {
+      activity: {
+        [Op.like]: '%added new database with status Booking%'
+      }
+    }
+  ];
+
+  return await msmart_activity.findAll({
+    where: {
+      username: username,
+      [Op.or]: activityConditions,
+      createdAt: {
+        [Op.between]: [new Date(startDateStr), new Date(endDateStr)],
+      },
+    },
+  });
+}
+
+async function getStatusChangeActivities(username, fromStatus, toStatus, startDateStr, endDateStr) {
+  const keyword = `%updated status from ${fromStatus} to ${toStatus}%`;
+
+  return await msmart_activity.findAll({
+    where: {
+      username: username,
+      activity: {
+        [Op.like]: keyword,
+      },
+      createdAt: {
+        [Op.between]: [new Date(startDateStr), new Date(endDateStr)],
+      },
+    },
+  });
+}
+
+//6. ⁠Booking To Reject Rate (Booking vs reject)
+
+async function getBookingRelatedActivities(username, startDateStr, endDateStr) {
+  const statuses = ['No Status', 'Follow Up', 'Rejected', 'Closed'];
+
+  const activityConditions = [
+    // Semua status ➜ Booking
+    ...statuses.map(status => ({
+      activity: {
+        [Op.like]: `%updated status from ${status} to Booking%`
+      }
+    })),
+    // Tambah yang added terus status Booking
+    {
+      activity: {
+        [Op.like]: '%added new database with status Booking%'
+      }
+    }
+  ];
+
+  return await msmart_activity.findAll({
+    where: {
+      username: username,
+      [Op.or]: activityConditions,
+      createdAt: {
+        [Op.between]: [new Date(startDateStr), new Date(endDateStr)],
+      },
+    },
+  });
+}
+
+async function getStatusChangeActivities(username, fromStatus, toStatus, startDateStr, endDateStr) {
+  const keyword = `%updated status from ${fromStatus} to ${toStatus}%`;
+
+  return await msmart_activity.findAll({
+    where: {
+      username: username,
+      activity: {
+        [Op.like]: keyword,
+      },
+      createdAt: {
+        [Op.between]: [new Date(startDateStr), new Date(endDateStr)],
+      },
+    },
+  });
+}
+
+//7. ⁠Total Average Follow up (berapa dah total average follow dah buat)
+
+
+
+//8. ⁠Average Follow Up Per Close (Berapa follow up diperlukan untuk close 1 sale)
+
+//9. ⁠Sales GAP (Target VS Actual) : dalam M-smart teamsale boleh isikan target sale perlu achieve dalam sebulan (dalam bentuk nilai jualan, bukan person) & sistem M-smart perlu auto kira Sales GAP antara Target VS Actual (berapa % current performance )

@@ -1,0 +1,183 @@
+.chat-container {
+    
+    max-width: 80vw;
+    min-width: 300px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 90vh;
+    max-height: 90vh;
+}
+
+.header-box {
+    display: flex;
+    border-bottom: 1px solid #ddd;
+    padding: 10px;
+}
+
+.chat-box {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    min-height: 50vh;
+    max-height: 90%;
+}
+
+.profile-pic{
+    width: 15%;
+}
+
+.message {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    word-wrap: break-word;
+}
+
+.message.bot .avatar img {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+}
+
+.message.user .avatar img {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    margin-left: 10px;
+}
+
+.message.bot .Text {
+    background-color: #e2e8f0;
+    padding: 10px 15px;
+    border-radius: 10px 10px 10px 0;
+    max-width: 70%;
+}
+
+.message.bot .Image {
+    background-color: #e2e8f0;
+    padding: 10px 15px;
+    border-radius: 10px 10px 10px 0;
+    max-width: 95%;
+}
+
+.message.bot .Video {
+    background-color: #e2e8f0;
+    padding: 10px 15px;
+    border-radius: 10px 10px 10px 0;
+    max-width: 95%;
+}
+
+.message.bot .Image img{
+    max-width: 250px;
+}
+
+.message.user .Text {
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 10px 10px 0 10px;
+    max-width: 70%;
+    margin-left: auto;
+}
+
+.input-box {
+    display: flex;
+    border-top: 1px solid #ddd;
+    padding: 0px;
+    margin-bottom: 10px;
+    overflow-y: auto;
+    max-height: 200px;
+}
+
+.minimal-form {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 5px;
+    gap: 10px; /* Ruang antara select dan input */
+  }
+  
+  /* Select */
+  .minimal-select {
+    padding: 8px 12px;
+    border: none; /* Hilangkan border asal */
+    border-bottom: 1px solid #ccc; /* Border bawah sahaja */
+    background-color: transparent;
+    color: #333;
+    font-size: 14px;
+    width: 35%;
+    outline: none;
+    transition: border-color 0.3s ease;
+  }
+  
+  .minimal-select:focus {
+    border-bottom: 2px solid #007bff; /* Tukar warna bila fokus */
+  }
+  
+  /* Input */
+  .minimal-input {
+    padding: 8px 12px;
+    border: none; /* Hilangkan border asal */
+    border-bottom: 1px solid #ccc; /* Border bawah sahaja */
+    background-color: transparent;
+    color: #333;
+    font-size: 14px;
+    width: 65%;
+    outline: none;
+    transition: border-color 0.3s ease;
+  }
+  
+  .minimal-input:focus {
+    border-bottom: 2px solid #007bff; /* Tukar warna bila fokus */
+  }
+  
+  @media (max-width: 480px) {
+    .minimal-form {
+      flex-wrap: nowrap; /* Pastikan tak tukar jadi menegak */
+    }
+  
+    .minimal-select{
+      width: 30%; /* Tetapkan ruang bagi yang sama */
+    }
+  }
+  
+
+@media only screen and (min-width: 768px) {
+    .chat-container {
+        max-width: 70vw;
+    }
+
+    .profile-pic{
+        width: 7%;
+    }
+    
+}
+
+@media only screen and (min-width: 1024px) {
+    .chat-container {
+        max-width: 50vw;
+    }
+    
+}
+
+@media only screen and (min-width: 1280px) {
+    .chat-container {
+        max-width: 40vw;
+    }
+    
+}
+
+@media only screen and (min-width: 1920px) {
+    .chat-container {
+        max-width: 30vw;
+    }
+    
+}
